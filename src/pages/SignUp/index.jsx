@@ -1,20 +1,20 @@
 import { Link } from "react-router-dom";
 import { Button, Container, Input, ContainerForm } from "./styles.jsx";
 
-export default function SignIn() {
+export default function SignUp() {
   return (
     <Container>
       <ContainerForm>
-        <p>Boas vindas ao My Polls!</p>
-        <h1>Faça o login com sua conta</h1>
-
+        <h2>Cadastre-se</h2>
         <form>
+          <Input placeholder="Name" type="text" />
           <Input placeholder="E-mail" type="text" />
           <Input placeholder="Password" type="password" />
-
-          <Button type="submit">Login</Button>
+          <Button type="submit">Cadastrar</Button>
         </form>
-        <span>Não tem cadastro? <Link to="/sign-up">Clique aqui!</Link></span>
+        <span>
+          Já tem cadastro? <Link to="/">Faça seu Login!</Link>
+        </span>
       </ContainerForm>
     </Container>
   );
