@@ -4,13 +4,11 @@ import { Avatar } from "./Avatar";
 
 export function Header() {
   return (
-    <>
-      <HeaderContainer>
-        <Logo src={logo} alt="logo beuni" />
-        <p>My Polls</p>
-        <Avatar />
-      </HeaderContainer>
-    </>
+    <HeaderContainer>
+      <Logo src={logo} alt="logo beuni" />
+      <p>My Polls</p>
+      <Avatar />
+    </HeaderContainer>
   );
 }
 

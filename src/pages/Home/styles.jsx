@@ -18,8 +18,8 @@ export const BodyContainer = styled.div`
 
 export const CardsContainer = styled.div`
   display: grid;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 15px;
+  margin-top: 15px;
   grid-template-columns: repeat(3, 1fr);
 
   @media (max-width: 1024px) {
