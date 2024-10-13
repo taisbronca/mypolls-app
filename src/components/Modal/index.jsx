@@ -2,9 +2,16 @@ import { useState, useEffect } from "react";
 import { ModalContainer, Backdrop, CloseIcon, OptionsDiv } from "./styles";
 import { FiTrash2 } from "react-icons/fi";
 
-const ModalPoll = ({ isOpen, onRequestClose, onSubmit, pollData = null, mode = "create" }) => {
+const ModalPoll = ({
+  isOpen,
+  onRequestClose,
+  onSubmit,
+  pollData = null,
+  mode = "create",
+}) => {
   const [pollTitle, setPollTitle] = useState("");
   const [pollOptions, setPollOptions] = useState([{ option: "" }]);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   useEffect(() => {
     if (mode === "edit" && pollData) {
@@ -71,8 +78,11 @@ const ModalPoll = ({ isOpen, onRequestClose, onSubmit, pollData = null, mode = "
               />
               <button
                 style={{
-                  backgroundColor: "#F75A68",
+                  backgroundColor:
+                    hoveredIndex === index ? "#AB222E" : "#F75A68",
                 }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
                 onClick={() => removeOption(index)}
               >
                 <FiTrash2 />
@@ -83,7 +93,9 @@ const ModalPoll = ({ isOpen, onRequestClose, onSubmit, pollData = null, mode = "
           <button type="button" onClick={addOption}>
             Add Option
           </button>
-          <button type="submit">{mode === "edit" ? "Update Poll" : "Create Poll"}</button>
+          <button type="submit">
+            {mode === "edit" ? "Update Poll" : "Create Poll"}
+          </button>
         </form>
       </ModalContainer>
     </Backdrop>

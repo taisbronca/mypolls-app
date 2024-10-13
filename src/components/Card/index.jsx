@@ -7,10 +7,16 @@ import {
   Divider,
   CardContent,
 } from "./styles";
-import ModalPoll from "../Modal/ModalEditPoll"; // Importando o modal reutilizável
+import ModalPoll from "../Modal";
 import { FiEdit } from "react-icons/fi";
 
-export function Card({ title, options, description, isNewPoll = false, pollData = null }) {
+export function Card({
+  title,
+  options,
+  description,
+  isNewPoll = false,
+  pollData = null,
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
@@ -29,7 +35,10 @@ export function Card({ title, options, description, isNewPoll = false, pollData 
       <CardHeader>
         <span>{title}</span>
         {!isNewPoll && (
-          <FiEdit style={{ cursor: "pointer", color:"#ff6200" }} onClick={openModal} />
+          <FiEdit
+            style={{ cursor: "pointer", color: "#ff6200" }}
+            onClick={openModal}
+          />
         )}
       </CardHeader>
       <Divider />
@@ -42,7 +51,7 @@ export function Card({ title, options, description, isNewPoll = false, pollData 
               {options?.map((option, index) => (
                 <li key={index}>
                   <span>{option.option}</span>
-                  <span>{option.votes}</span> 
+                  <span>{option.votes}</span>
                 </li>
               ))}
             </ul>
@@ -55,7 +64,7 @@ export function Card({ title, options, description, isNewPoll = false, pollData 
         onRequestClose={closeModal}
         onSubmit={handleSubmit}
         pollData={pollData}
-        mode={isNewPoll ? "create" : "edit"} // Define o modo com base na prop isNewPoll
+        mode={isNewPoll ? "create" : "edit"}
       />
     </CardContainer>
   );
