@@ -19,22 +19,5 @@ This is the repository for the frontend of Poll Manager, an application for crea
 6. Create and User Authentication
    Access to poll creation and editing is restricted to authenticated users.
 
-#### Project Structure
-
-mypolls-app/
-├── public/ # Public files of the application (index.html, favicons)
-├── src/
-│ ├── components/ # Reusable UI components
-│ ├── contexts/ # Context API for global state management
-│ ├── pages/ # Application pages (Home, SignIn, SignUp)
-│ ├── services/ # Services for API communication (e.g., getPolls, createPoll)
-│ ├── styles/ # Global styles and themes
-│ ├── App.js # Root component of the application
-│ ├── index.js # Application entry point
-│ └── routes/ # Route configuration using React Router  
-│ # Environment configuration example
-├── package.json
-├── README.md # Project documentation
-└── ...
 
 ###### tags: `front-end` `React.js` `Styled-Components` `vite`
