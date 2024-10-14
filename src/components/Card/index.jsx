@@ -90,7 +90,7 @@ export function Card({
               {options?.map((option, index) => (
                 <li key={index}>
                   <span>{option.option}</span>
-                  <span>{option?.votes}</span>
+                  {/* <span>{option?.votes}</span> */}
                 </li>
               ))}
             </ul>
