@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "../../components/Card";
 import { Header } from "../../components/Header";
-import {  getAllPollsByUser } from "../../services/pollServices.js";
+import { getAllPollsByUser } from "../../services/pollServices.js";
 import { BodyContainer, CardsContainer, MainContainer } from "./styles";
 
 export default function Home() {
@@ -16,6 +16,21 @@ export default function Home() {
     findAllPollsByUser();
   }, []);
 
+  function addPollToState(newPoll) {
+    setPolls((prevPolls) => [...prevPolls, newPoll]);
+    findAllPollsByUser();
+  }
+
+  function updatePollInState(updatedPoll) {
+    setPolls((prevPolls) =>
+      prevPolls.map((poll) => (poll.id === updatedPoll.id ? updatedPoll : poll))
+    );
+    findAllPollsByUser();
+  }
+  function removePollFromState(pollId) {
+    setPolls((prevPolls) => prevPolls.filter((poll) => poll.id !== pollId));
+    findAllPollsByUser();
+  }
 
   return (
     <MainContainer>
@@ -35,6 +50,9 @@ export default function Home() {
                 title={poll.title}
                 options={poll.options}
                 pollData={poll}
+                addPollToState={addPollToState}
+                updatePollInState={updatePollInState}
+                removePollFromState={removePollFromState}
               />
             ))}
         </CardsContainer>

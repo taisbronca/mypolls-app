@@ -8,6 +8,7 @@ import { z } from "zod";
 import { UserContext } from "../../contexts/UserContext";
 import { createPoll, editPoll } from "../../services/pollServices";
 import { Backdrop, CloseIcon, ModalContainer, OptionsDiv } from "./styles";
+import Swal from "sweetalert2";
 
 const PollsSchema = z.object({
   title: z.string(),
@@ -26,12 +27,14 @@ const ModalPoll = ({
   onRequestClose,
   pollData = null,
   mode = "create",
+  addPollToState,
+  updatePollInState,
 }) => {
   const { register, handleSubmit, setValue, reset, control } = useForm({
     resolver: zodResolver(PollsSchema),
     defaultValues: {
       title: "",
-      options: [{ option: "" }, {votes: 0}],
+      options: [{ option: "" }, { votes: 0 }],
     },
   });
   const navigate = useNavigate();
@@ -44,7 +47,13 @@ const ModalPoll = ({
   useEffect(() => {
     if (mode === "edit" && pollData) {
       setValue("title", pollData.title);
-      setValue("options", pollData.options.map((opt) => opt.option))
+      setValue(
+        "options",
+        pollData.options.map((opt) => ({
+          option: opt.option,
+          votes: opt.votes || 0,
+        }))
+      );
     } else {
       reset();
     }
@@ -53,20 +62,17 @@ const ModalPoll = ({
   async function onSubmit(data) {
     try {
       if (loading) {
-        console.log("Carregando usuário...");
         return;
       }
 
       if (!user) {
-        console.log("Usuário não autenticado, redirecionando...");
-        navigate("/"); 
+        navigate("/");
         return;
       }
 
-
       const formattedData = {
         ...data,
-        options: data.options.map(option => ({
+        options: data.options.map((option) => ({
           option: option.option || option,
           votes: 0,
         })),
@@ -74,16 +80,44 @@ const ModalPoll = ({
       };
 
       if (mode === "create") {
-        await createPoll(formattedData);
-        console.log(createPoll);
+        const newPoll = await createPoll(formattedData);
+        addPollToState(newPoll.data);
+
+        Swal.fire({
+          title: "Poll Created!",
+          text: "Your new poll was created successfully.",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
       } else {
-        await editPoll(pollData._id, data);
+        const updatedPoll = await editPoll(formattedData, pollData.id);
+        updatePollInState(updatedPoll.data);
+
+        Swal.fire({
+          title: "Poll Updated!",
+          text: "Your poll was updated successfully.",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
       }
+
       onRequestClose();
       reset();
     } catch (error) {
-      console.error("Erro ao criar/editar a poll:", error.response ? error.response.data : error.message);
-  }
+      console.error(
+        "Error:",
+        error.response ? error.response.data : error.message
+      );
+
+      Swal.fire({
+        title: "Erro!",
+        text: error.response
+          ? error.response.data
+          : "An error occurred while processing the request.",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+    }
   }
 
   const addOption = () => {

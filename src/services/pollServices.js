@@ -36,7 +36,7 @@ export function getPollById(id) {
 }
 
 export function editPoll(body, id) {
-  const response = axios.patch(`${baseURL}/polls/update/${id}`, body, {
+  const response = axios.put(`${baseURL}/polls/update/${id}`, body, {
     headers: {
       Authorization: `Bearer ${Cookies.get("token")}`,
     },
