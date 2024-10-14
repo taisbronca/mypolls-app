@@ -45,6 +45,10 @@ export const CardBody = styled.div`
   font-size: 14px;
   color: #333;
   text-align: left;
+  
+  p {
+    padding-bottom: 50px;
+  }
 
   ul {
     list-style: none;

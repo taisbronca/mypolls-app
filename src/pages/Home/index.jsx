@@ -1,30 +1,21 @@
-import { Header } from "../../components/Header";
-import { MainContainer, CardsContainer, BodyContainer } from "./styles";
+import { useEffect, useState } from "react";
 import { Card } from "../../components/Card";
-import { getAllPolls } from "../../services/pollServices.js";
-import {  useEffect, useState } from "react";
+import { Header } from "../../components/Header";
+import {  getAllPollsByUser } from "../../services/pollServices.js";
+import { BodyContainer, CardsContainer, MainContainer } from "./styles";
 
 export default function Home() {
   const [polls, setPolls] = useState([]);
 
-  async function findPoll() {
-    const pollsResponse = await getAllPolls();
-    setPolls(pollsResponse.data.results);
+  async function findAllPollsByUser() {
+    const pollsResponse = await getAllPollsByUser();
+    setPolls(pollsResponse.data.pollsByUser);
   }
 
-  // async function findAllPolls() {
-  //   try {
-  //     const token = Cookies.get("token");
-  //     const response = await getAllPolls(token);
-  //     setPolls(response.data.results);
-  //   } catch (error) {
-  //     console.error("Error fetching polls:", error.message);
-  //   }
-  // }
-
   useEffect(() => {
-    findPoll();
+    findAllPollsByUser();
   }, []);
+
 
   return (
     <MainContainer>
@@ -37,14 +28,15 @@ export default function Home() {
             description="Do you need a new poll? Use the button below!"
             isNewPoll={true}
           />
-          {polls.map((poll) => (
-            <Card
-              key={poll.id}
-              title={poll.title}
-              options={poll.options}
-              pollData={poll}
-            />
-          ))}
+          {polls &&
+            polls.map((poll) => (
+              <Card
+                key={poll.id}
+                title={poll.title}
+                options={poll.options}
+                pollData={poll}
+              />
+            ))}
         </CardsContainer>
       </BodyContainer>
     </MainContainer>

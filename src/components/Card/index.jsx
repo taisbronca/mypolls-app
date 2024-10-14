@@ -1,15 +1,15 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import {
-  CardContainer,
-  CardHeader,
-  CardBody,
-  CardButton,
-  Divider,
-  CardContent,
-} from "./styles";
-import ModalPoll from "../Modal";
 import { FiEdit } from "react-icons/fi";
+import ModalPoll from "../Modal";
+import {
+    CardBody,
+    CardButton,
+    CardContainer,
+    CardContent,
+    CardHeader,
+    Divider,
+} from "./styles";
 
 export function Card({
   title,
@@ -19,17 +19,8 @@ export function Card({
   pollData = null,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
-  const handleSubmit = (data) => {
-    if (isNewPoll) {
-      console.log("Creating new poll:", data);
-    } else {
-      console.log("Editing poll:", data);
-    }
-  };
 
   return (
     <CardContainer>
@@ -52,7 +43,7 @@ export function Card({
               {options?.map((option, index) => (
                 <li key={index}>
                   <span>{option.option}</span>
-                  <span>{option.votes}</span>
+                  <span>{option?.votes}</span>
                 </li>
               ))}
             </ul>
@@ -63,7 +54,6 @@ export function Card({
       <ModalPoll
         isOpen={isModalOpen}
         onRequestClose={closeModal}
-        onSubmit={handleSubmit}
         pollData={pollData}
         mode={isNewPoll ? "create" : "edit"}
       />

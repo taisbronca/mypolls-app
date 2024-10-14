@@ -1,10 +1,25 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useContext } from "react";
-import { ModalContainer, Backdrop, CloseIcon, OptionsDiv } from "./styles";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useContext, useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { FiTrash2 } from "react-icons/fi";
-import Cookies from "js-cookie";
-import { createPoll } from "../../services/pollServices";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { UserContext } from "../../contexts/UserContext";
+import { createPoll, editPoll } from "../../services/pollServices";
+import { Backdrop, CloseIcon, ModalContainer, OptionsDiv } from "./styles";
 
+const PollsSchema = z.object({
+  title: z.string(),
+  options: z
+    .array(
+      z.object({
+        option: z.string(),
+        votes: z.number().optional(),
+      })
+    )
+    .min(1),
+});
 
 const ModalPoll = ({
   isOpen,
@@ -12,64 +27,72 @@ const ModalPoll = ({
   pollData = null,
   mode = "create",
 }) => {
-  const [pollTitle, setPollTitle] = useState("");
-  const [pollOptions, setPollOptions] = useState([{ option: "" }]);
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const { register, handleSubmit, setValue, reset, control } = useForm({
+    resolver: zodResolver(PollsSchema),
+    defaultValues: {
+      title: "",
+      options: [{ option: "" }, {votes: 0}],
+    },
+  });
+  const navigate = useNavigate();
+  const { user, loading } = useContext(UserContext);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "options",
+  });
 
   useEffect(() => {
     if (mode === "edit" && pollData) {
-      setPollTitle(pollData.title || "");
-      setPollOptions(pollData.options || [{ option: "" }]);
+      setValue("title", pollData.title);
+      setValue("options", pollData.options.map((opt) => opt.option))
+    } else {
+      reset();
     }
-  }, [pollData, mode]);
+  }, [pollData, mode, setValue, reset]);
 
-  //create new poll
-  async function handleCreatePoll(e) {
-    e.preventDefault();
-
-    // if (!token) {
-    //   console.error("No token found. Please log in again.");
-    //   return;
-    // }
-
+  async function onSubmit(data) {
     try {
-      await createPoll({
-        title: pollTitle,
-        options: pollOptions.filter((opt) => opt.option.trim() !== ""),
-      });
+      if (loading) {
+        console.log("Carregando usuário...");
+        return;
+      }
 
-      setPollTitle("");
-      setPollOptions([{ option: "" }]);
+      if (!user) {
+        console.log("Usuário não autenticado, redirecionando...");
+        navigate("/"); 
+        return;
+      }
+
+
+      const formattedData = {
+        ...data,
+        options: data.options.map(option => ({
+          option: option.option || option,
+          votes: 0,
+        })),
+        user: user._id,
+      };
+
+      if (mode === "create") {
+        await createPoll(formattedData);
+        console.log(createPoll);
+      } else {
+        await editPoll(pollData._id, data);
+      }
       onRequestClose();
+      reset();
     } catch (error) {
-      console.log({ message: error });
-    }
+      console.error("Erro ao criar/editar a poll:", error.response ? error.response.data : error.message);
+  }
   }
 
-  // edit poll
-  const handleOptionChange = (index, value) => {
-    const updatedOptions = [...pollOptions];
-    updatedOptions[index].option = value;
-    setPollOptions(updatedOptions);
-  };
-
   const addOption = () => {
-    setPollOptions([...pollOptions, { option: "" }]);
+    append({ option: "" });
   };
 
   const removeOption = (index) => {
-    const updatedOptions = pollOptions.filter((_, i) => i !== index);
-    setPollOptions(updatedOptions);
+    remove(index);
   };
-
-  // onSubmit({
-  //   title: pollTitle,
-  //   options: pollOptions.filter((opt) => opt.option.trim() !== ""),
-  // });
-
-  // setPollTitle("");
-  // setPollOptions([{ option: "" }]);
-  // onRequestClose();
 
   if (!isOpen) return null;
 
@@ -78,37 +101,26 @@ const ModalPoll = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <CloseIcon onClick={onRequestClose}>✖</CloseIcon>
         <h2>{mode === "edit" ? "Edit Poll" : "Create New Poll"}</h2>
-        <form onSubmit={handleCreatePoll}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <label htmlFor="poll-title">Poll Title</label>
           <input
             id="poll-title"
             type="text"
             placeholder="Poll Title"
-            value={pollTitle}
-            onChange={(e) => setPollTitle(e.target.value)}
+            {...register("title")}
             required
           />
 
           <label>Poll Options</label>
-          {pollOptions.map((option, index) => (
-            <OptionsDiv key={index}>
+          {fields.map((field, index) => (
+            <OptionsDiv key={field.id}>
               <input
                 type="text"
                 placeholder={`Option ${index + 1}`}
-                value={option.option}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
+                {...register(`options.${index}.option`)}
                 required
               />
-              <button
-                type="button"
-                style={{
-                  backgroundColor:
-                    hoveredIndex === index ? "#AB222E" : "#F75A68",
-                }}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                onClick={() => removeOption(index)}
-              >
+              <button type="button" onClick={() => removeOption(index)}>
                 <FiTrash2 />
               </button>
             </OptionsDiv>
