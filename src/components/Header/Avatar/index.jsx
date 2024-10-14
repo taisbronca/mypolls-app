@@ -1,15 +1,35 @@
 import { AvatarContainer, AvatarRoot, DropdownContainer } from "./styles.jsx";
 import { FaUserCircle, FaEdit, FaSignOutAlt } from "react-icons/fa";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../contexts/UserContext.jsx";
+import { userLogged } from "../../../services/userServices.js";
+import Cookies from "js-cookie";
 
 export function Avatar() {
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  async function findUserLogged() {
+    try {
+      const response = await userLogged();
+      setUser(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   function handleLogout() {
+    Cookies.remove("token");
+    setUser(undefined);
     navigate("/");
   }
+
+  useEffect(() => {
+    if (Cookies.get("token")) findUserLogged();
+  }, []);
+
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -20,7 +40,7 @@ export function Avatar() {
       <AvatarRoot onClick={toggleDropdown}>
         <FaUserCircle size={32} color="#ff6200" />
       </AvatarRoot>
-      <span> Tais{/* {getFirstAndLastName(user?.name)} */}</span>
+      {user ? <span>{user.name}</span> : "a"}
 
       {isDropdownOpen && (
         <DropdownContainer>

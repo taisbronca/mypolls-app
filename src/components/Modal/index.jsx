@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useContext } from "react";
 import { ModalContainer, Backdrop, CloseIcon, OptionsDiv } from "./styles";
 import { FiTrash2 } from "react-icons/fi";
+import Cookies from "js-cookie";
+import { createPoll } from "../../services/pollServices";
+
 
 const ModalPoll = ({
   isOpen,
   onRequestClose,
-  onSubmit,
   pollData = null,
   mode = "create",
 }) => {
@@ -20,6 +23,30 @@ const ModalPoll = ({
     }
   }, [pollData, mode]);
 
+  //create new poll
+  async function handleCreatePoll(e) {
+    e.preventDefault();
+
+    // if (!token) {
+    //   console.error("No token found. Please log in again.");
+    //   return;
+    // }
+
+    try {
+      await createPoll({
+        title: pollTitle,
+        options: pollOptions.filter((opt) => opt.option.trim() !== ""),
+      });
+
+      setPollTitle("");
+      setPollOptions([{ option: "" }]);
+      onRequestClose();
+    } catch (error) {
+      console.log({ message: error });
+    }
+  }
+
+  // edit poll
   const handleOptionChange = (index, value) => {
     const updatedOptions = [...pollOptions];
     updatedOptions[index].option = value;
@@ -35,18 +62,14 @@ const ModalPoll = ({
     setPollOptions(updatedOptions);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // onSubmit({
+  //   title: pollTitle,
+  //   options: pollOptions.filter((opt) => opt.option.trim() !== ""),
+  // });
 
-    onSubmit({
-      title: pollTitle,
-      options: pollOptions.filter((opt) => opt.option.trim() !== ""),
-    });
-
-    setPollTitle("");
-    setPollOptions([{ option: "" }]);
-    onRequestClose();
-  };
+  // setPollTitle("");
+  // setPollOptions([{ option: "" }]);
+  // onRequestClose();
 
   if (!isOpen) return null;
 
@@ -55,7 +78,7 @@ const ModalPoll = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <CloseIcon onClick={onRequestClose}>✖</CloseIcon>
         <h2>{mode === "edit" ? "Edit Poll" : "Create New Poll"}</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleCreatePoll}>
           <label htmlFor="poll-title">Poll Title</label>
           <input
             id="poll-title"
@@ -77,6 +100,7 @@ const ModalPoll = ({
                 required
               />
               <button
+                type="button"
                 style={{
                   backgroundColor:
                     hoveredIndex === index ? "#AB222E" : "#F75A68",
