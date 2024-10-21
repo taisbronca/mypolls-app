@@ -24,7 +24,6 @@ export const ContainerForm = styled.div`
   width: 100%;
   max-width: 400px;
 
-
   p {
     margin-bottom: 20px;
   }
@@ -67,4 +66,12 @@ export const Button = styled.button`
   &:hover {
     background-color: #3d3d42;
   }
+`;
+
+export const ErrorMessage = styled.p`
+  color: red;
+  font-size: 12px;
+  margin-top: -12px;
+  margin-left: 5px;
+  text-align: left;
 `;

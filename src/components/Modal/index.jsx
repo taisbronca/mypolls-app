@@ -34,7 +34,7 @@ const ModalPoll = ({
     resolver: zodResolver(PollsSchema),
     defaultValues: {
       title: "",
-      options: [{ option: "" }, { votes: 0 }],
+      options: [],
     },
   });
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ const ModalPoll = ({
       if (mode === "create") {
         const newPoll = await createPoll(formattedData);
         addPollToState(newPoll.data);
-
+        console.log(addPollToState);
         Swal.fire({
           title: "Poll Created!",
           text: "Your new poll was created successfully.",
@@ -104,10 +104,7 @@ const ModalPoll = ({
       onRequestClose();
       reset();
     } catch (error) {
-      console.error(
-        "Error:",
-        error.response ? error.response.data : error.message
-      );
+      console.error(error);
 
       Swal.fire({
         title: "Erro!",

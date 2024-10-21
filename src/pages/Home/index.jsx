@@ -16,9 +16,9 @@ export default function Home() {
     findAllPollsByUser();
   }, []);
 
-  function addPollToState(newPoll) {
+  async function addPollToState(newPoll) {
     setPolls((prevPolls) => [...prevPolls, newPoll]);
-    findAllPollsByUser();
+    await findAllPollsByUser();
   }
 
   function updatePollInState(updatedPoll) {
