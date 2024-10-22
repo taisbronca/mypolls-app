@@ -17,8 +17,8 @@ export function getAllPollsByUser() {
   return response;
 }
 
-export async function createPoll(body) {
-  const response = await axios.post(`${baseURL}/polls/create`, body, {
+export  function createPoll(body) {
+  const response =  axios.post(`${baseURL}/polls/create`, body, {
     headers: {
       Authorization: `Bearer ${Cookies.get("token")}`,
     },

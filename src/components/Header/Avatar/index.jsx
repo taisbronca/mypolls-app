@@ -46,11 +46,11 @@ export function Avatar() {
         <DropdownContainer>
           <ul>
             <li onClick={() => console.log("Editar")}>
-              Editar
+              Profile
               <FaEdit size={16} />
             </li>
             <li onClick={handleLogout}>
-              Sair
+              Logout
               <FaSignOutAlt size={16} />
             </li>
           </ul>

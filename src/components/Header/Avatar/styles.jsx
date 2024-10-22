@@ -35,7 +35,7 @@ export const DropdownContainer = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  width: 100px;
+  width: 110px;
 
   ul {
     list-style: none;

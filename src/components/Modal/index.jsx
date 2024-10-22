@@ -1,25 +1,31 @@
 /* eslint-disable react/prop-types */
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext, useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { FiTrash2 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { z } from "zod";
 import { UserContext } from "../../contexts/UserContext";
 import { createPoll, editPoll } from "../../services/pollServices";
-import { Backdrop, CloseIcon, ModalContainer, OptionsDiv } from "./styles";
-import Swal from "sweetalert2";
+import {
+  Backdrop,
+  CloseIcon,
+  ErrorMessage,
+  ModalContainer,
+  OptionsDiv,
+} from "./styles";
 
 const PollsSchema = z.object({
-  title: z.string(),
+  title: z.string().nonempty("Title is required."),
   options: z
     .array(
       z.object({
-        option: z.string(),
+        option: z.string().nonempty("Option is required."),
         votes: z.number().optional(),
       })
     )
-    .min(1),
+    .min(1, "You must provide at least one option."),
 });
 
 const ModalPoll = ({
@@ -27,18 +33,43 @@ const ModalPoll = ({
   onRequestClose,
   pollData = null,
   mode = "create",
-  addPollToState,
-  updatePollInState,
 }) => {
-  const { register, handleSubmit, setValue, reset, control } = useForm({
+  const queryClient = useQueryClient();
+
+  const createPollMutation = useMutation({
+    mutationFn: createPoll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["polls"],
+      });
+    },
+  });
+
+  const editPollMutation = useMutation({
+    mutationFn: ({ body, id }) => editPoll(body, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["polls"],
+      });
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    control,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(PollsSchema),
     defaultValues: {
       title: "",
-      options: [],
+      options: [""],
     },
   });
-  const navigate = useNavigate();
-  const { user, loading } = useContext(UserContext);
+
+  const { user } = useContext(UserContext);
   const { fields, append, remove } = useFieldArray({
     control,
     name: "options",
@@ -59,63 +90,34 @@ const ModalPoll = ({
     }
   }, [pollData, mode, setValue, reset]);
 
-  async function onSubmit(data) {
-    try {
-      if (loading) {
-        return;
-      }
+  const onSubmit = async (data) => {
+    const formattedData = {
+      ...data,
+      options: data.options.map((option) => ({
+        option: option.option,
+        votes: 0,
+      })),
+      user: user._id,
+    };
 
-      if (!user) {
-        navigate("/");
-        return;
-      }
-
-      const formattedData = {
-        ...data,
-        options: data.options.map((option) => ({
-          option: option.option || option,
-          votes: 0,
-        })),
-        user: user._id,
-      };
-
-      if (mode === "create") {
-        const newPoll = await createPoll(formattedData);
-        addPollToState(newPoll.data);
-        console.log(addPollToState);
-        Swal.fire({
-          title: "Poll Created!",
-          text: "Your new poll was created successfully.",
-          icon: "success",
-          confirmButtonText: "Ok",
-        });
-      } else {
-        const updatedPoll = await editPoll(formattedData, pollData.id);
-        updatePollInState(updatedPoll.data);
-
-        Swal.fire({
-          title: "Poll Updated!",
-          text: "Your poll was updated successfully.",
-          icon: "success",
-          confirmButtonText: "Ok",
-        });
-      }
-
-      onRequestClose();
-      reset();
-    } catch (error) {
-      console.error(error);
-
-      Swal.fire({
-        title: "Erro!",
-        text: error.response
-          ? error.response.data
-          : "An error occurred while processing the request.",
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
+    if (mode === "create") {
+      createPollMutation.mutate(formattedData);
+      Swal.fire(
+        "Poll Created!",
+        "Your new poll was created successfully.",
+        "success"
+      );
+    } else {
+      editPollMutation.mutate({ body: formattedData, id: pollData.id });
+      Swal.fire(
+        "Poll Updated!",
+        "Your poll was updated successfully.",
+        "success"
+      );
     }
-  }
+
+    onRequestClose();
+  };
 
   const addOption = () => {
     append({ option: "" });
@@ -125,35 +127,50 @@ const ModalPoll = ({
     remove(index);
   };
 
-  if (!isOpen) return null;
-
-  return (
+  return isOpen ? (
     <Backdrop onClick={onRequestClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <CloseIcon onClick={onRequestClose}>✖</CloseIcon>
         <h2>{mode === "edit" ? "Edit Poll" : "Create New Poll"}</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <label htmlFor="poll-title">Poll Title</label>
-          <input
-            id="poll-title"
-            type="text"
-            placeholder="Poll Title"
-            {...register("title")}
-            required
-          />
-
+          <div>
+            <label htmlFor="poll-title">Poll Title</label>
+            <input
+              id="poll-title"
+              type="text"
+              placeholder="Poll Title"
+              {...register("title")}
+            />
+            {errors.title && (
+              <ErrorMessage>{errors.title.message}</ErrorMessage>
+            )}
+          </div>
           <label>Poll Options</label>
           {fields.map((field, index) => (
             <OptionsDiv key={field.id}>
-              <input
-                type="text"
-                placeholder={`Option ${index + 1}`}
-                {...register(`options.${index}.option`)}
-                required
-              />
-              <button type="button" onClick={() => removeOption(index)}>
-                <FiTrash2 />
-              </button>
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "5px",
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder={`Option ${index + 1}`}
+                  {...register(`options.${index}.option`)}
+                />
+                <button type="button" onClick={() => removeOption(index)}>
+                  <FiTrash2 />
+                </button>
+              </div>
+
+              {errors.options?.[index]?.option && (
+                <ErrorMessage>
+                  {errors.options[index].option.message}
+                </ErrorMessage>
+              )}
             </OptionsDiv>
           ))}
 
@@ -166,7 +183,7 @@ const ModalPoll = ({
         </form>
       </ModalContainer>
     </Backdrop>
-  );
+  ) : null;
 };
 
 export default ModalPoll;

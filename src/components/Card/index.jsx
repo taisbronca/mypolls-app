@@ -12,6 +12,7 @@ import {
     CardHeader,
     Divider,
 } from "./styles";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function Card({
   title,
@@ -20,10 +21,21 @@ export function Card({
   isNewPoll = false,
   pollData = null,
   addPollToState,
-  updatePollInState,
-  removePollFromState
+  updatePollInState
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Mutation for deleting a poll
+  const deletePollMutation = useMutation({
+    mutationFn: deletePoll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['polls']
+      });
+    },
+  });
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
@@ -42,8 +54,7 @@ export function Card({
         const pollId = pollData?.id;
 
         if (pollId) {
-          await deletePoll(pollId);
-          removePollFromState(pollId); 
+          deletePollMutation.mutate(pollId);
           Swal.fire("Deleted!", "Your poll was deleted.", "success");
         } else {
           throw new Error("Poll ID not found.");
@@ -51,7 +62,7 @@ export function Card({
       } catch (error) {
         console.error(error);
         Swal.fire(
-          "Erro!",
+          "Error!",
           "An error occurred while deleting the poll.",
           "error"
         );

@@ -1,36 +1,68 @@
-import { useEffect, useState } from "react";
+//import { useEffect, useState } from "react";
 import { Card } from "../../components/Card";
 import { Header } from "../../components/Header";
-import { getAllPollsByUser } from "../../services/pollServices.js";
+import {
+  createPoll,
+  deletePoll,
+  editPoll,
+  getAllPollsByUser,
+} from "../../services/pollServices.js";
 import { BodyContainer, CardsContainer, MainContainer } from "./styles";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Home() {
-  const [polls, setPolls] = useState([]);
+  const queryClient = useQueryClient();
 
-  async function findAllPollsByUser() {
-    const pollsResponse = await getAllPollsByUser();
-    setPolls(pollsResponse.data.pollsByUser);
-  }
+  const {
+    data: polls,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["polls"],
+    queryFn: getAllPollsByUser,
+  });
 
-  useEffect(() => {
-    findAllPollsByUser();
-  }, []);
+  const addPollMutation = useMutation({
+    mutationFn: createPoll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["polls"],
+      });
+    },
+  });
 
-  async function addPollToState(newPoll) {
-    setPolls((prevPolls) => [...prevPolls, newPoll]);
-    await findAllPollsByUser();
-  }
+  const updatePollMutation = useMutation({
+    mutationFn: ({ body, id }) => editPoll(body, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["polls"],
+      });
+    },
+  });
 
-  function updatePollInState(updatedPoll) {
-    setPolls((prevPolls) =>
-      prevPolls.map((poll) => (poll.id === updatedPoll.id ? updatedPoll : poll))
-    );
-    findAllPollsByUser();
-  }
-  function removePollFromState(pollId) {
-    setPolls((prevPolls) => prevPolls.filter((poll) => poll.id !== pollId));
-    findAllPollsByUser();
-  }
+  const deletePollMutation = useMutation({
+    mutationFn: deletePoll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["polls"],
+      });
+    },
+  });
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading polls: {error.message}</p>;
+
+  const handleAddPoll = (newPoll) => {
+    addPollMutation.mutate(newPoll);
+  };
+
+  const handleUpdatePoll = (updatedPollData, pollId) => {
+    updatePollMutation.mutate({ body: updatedPollData, id: pollId });
+  };
+
+  const handleRemovePoll = (pollId) => {
+    deletePollMutation.mutate(pollId);
+  };
 
   return (
     <MainContainer>
@@ -42,19 +74,18 @@ export default function Home() {
             title="Add a new poll"
             description="Do you need a new poll? Use the button below!"
             isNewPoll={true}
+            addPollToState={handleAddPoll}
           />
-          {polls &&
-            polls.map((poll) => (
-              <Card
-                key={poll.id}
-                title={poll.title}
-                options={poll.options}
-                pollData={poll}
-                addPollToState={addPollToState}
-                updatePollInState={updatePollInState}
-                removePollFromState={removePollFromState}
-              />
-            ))}
+          {polls?.data.pollsByUser.map((poll) => (
+            <Card
+              key={poll.id}
+              title={poll.title}
+              options={poll.options}
+              pollData={poll}
+              updatePollInState={handleUpdatePoll}
+              removePollFromState={handleRemovePoll}
+            />
+          ))}
         </CardsContainer>
       </BodyContainer>
     </MainContainer>

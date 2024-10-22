@@ -79,8 +79,12 @@ export const ModalContainer = styled.div`
 
 export const OptionsDiv = styled.div`
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-direction: column;
+  //align-items: center;
+  //justify-content: space-between;
+  //gap: 5px;
+
+  
 `;
 
 export const CloseIcon = styled.span`
@@ -94,4 +98,11 @@ export const CloseIcon = styled.span`
   &:hover {
     color: #ff944d;
   }
+`;
+
+export const ErrorMessage = styled.p`
+  color: red;
+  font-size: 12px;
+  margin-left: 5px;
+  text-align: left;
 `;
