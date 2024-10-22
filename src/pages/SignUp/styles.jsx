@@ -19,11 +19,13 @@ export const ContainerForm = styled.div`
   border-radius: 10px;
   border: 1px solid #ff944d;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  padding: 20px 30px;
+  padding: 30px 50px;
   color: #333333;
-  width: 100%;
-  max-width: 400px;
+  max-width: 100%;
 
+  form {
+    width: 100%;
+  }
   p {
     margin-bottom: 20px;
   }
@@ -54,7 +56,7 @@ export const ContainerForm = styled.div`
 
 export const Button = styled.button`
   width: 100%;
-  height: 50px;
+  height: 40px;
   border: none;
   border-radius: 10px;
   color: white;
