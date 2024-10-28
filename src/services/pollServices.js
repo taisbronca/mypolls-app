@@ -1,7 +1,10 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const baseURL = "http://localhost:3000";
+const baseURL =
+  import.meta.env.MODE === "production"
+    ? import.meta.env.VITE_API_URL_PROD
+    : import.meta.env.VITE_API_URL_DEV;
 
 export function getAllPolls() {
   const response = axios.get(`${baseURL}/polls`);
@@ -17,8 +20,8 @@ export function getAllPollsByUser() {
   return response;
 }
 
-export  function createPoll(body) {
-  const response =  axios.post(`${baseURL}/polls/create`, body, {
+export function createPoll(body) {
+  const response = axios.post(`${baseURL}/polls/create`, body, {
     headers: {
       Authorization: `Bearer ${Cookies.get("token")}`,
     },

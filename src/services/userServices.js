@@ -1,7 +1,10 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const baseURL = "http://localhost:3000";
+const baseURL =
+  import.meta.env.MODE === "production"
+    ? import.meta.env.VITE_API_URL_PROD
+    : import.meta.env.VITE_API_URL_DEV;
 
 export function signup(data) {
   const body = {
