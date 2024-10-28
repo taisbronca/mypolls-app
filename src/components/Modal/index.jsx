@@ -116,6 +116,7 @@ const ModalPoll = ({
       );
     }
 
+    reset();
     onRequestClose();
   };
 
