@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { devices } from "../../styles/global";
 
 export const Container = styled.div`
   width: 100vw;
@@ -50,6 +51,17 @@ export const ContainerForm = styled.div`
     font-weight: bold;
     &:hover {
       color: #ff944d;
+    }
+  }
+
+  @media (max-width: ${devices.tablet}) {
+    h2 {
+      font-size: 20px;
+      text-align: center;
+    }
+
+    p, span {
+      font-size: 13px
     }
   }
 `;
